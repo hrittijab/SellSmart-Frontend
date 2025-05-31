@@ -22,7 +22,7 @@ function Report() {
 
   const fetchYearlyProfits = useCallback(async (selectedYear) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`);
+      const res = await fetch(`https://sellsmart-backend.onrender.com/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`);
       const data = await res.json();
       setMonthlyProfits(data);
       const total = data.reduce((sum, entry) => sum + entry.profit, 0);
@@ -35,11 +35,11 @@ function Report() {
   const fetchFilteredData = useCallback(async () => {
     if (!fromDate || !toDate) return;
     try {
-      const salesRes = await fetch(`http://localhost:8080/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`);
+      const salesRes = await fetch(`https://sellsmart-backend.onrender.com/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`);
       const salesData = await salesRes.json();
       setFilteredSales(salesData);
 
-      const damageRes = await fetch(`http://localhost:8080/api/damages/between?email=${email}&from=${fromDate}&to=${toDate}`);
+      const damageRes = await fetch(`https://sellsmart-backend.onrender.com/api/damages/between?email=${email}&from=${fromDate}&to=${toDate}`);
       const damageData = await damageRes.json();
       setFilteredDamages(damageData);
     } catch (err) {

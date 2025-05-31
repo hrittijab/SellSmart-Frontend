@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const BASE_URL = 'http://localhost:8080/api/auth';
+const BASE_URL = 'https://sellsmart-backend.onrender.com/api/auth';
 
 const AuthForm = () => {
   const [step, setStep] = useState('email');

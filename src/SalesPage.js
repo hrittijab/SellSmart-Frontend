@@ -19,7 +19,7 @@ function SalesPage() {
 
   const fetchSales = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/sales/view?email=${email}&date=${date}`);
+      const response = await fetch(`https://sellsmart-backend.onrender.com/api/sales/view?email=${email}&date=${date}`);
       const data = await response.json();
       setSales(data);
     } catch (error) {
@@ -29,7 +29,7 @@ function SalesPage() {
 
   const fetchDamages = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/damages/view?email=${email}&date=${date}`);
+      const response = await fetch(`https://sellsmart-backend.onrender.com/api/damages/view?email=${email}&date=${date}`);
       const data = await response.json();
       setDamages(data);
     } catch (error) {
@@ -45,7 +45,7 @@ function SalesPage() {
   }, [email, fetchSales, fetchDamages]);
 
   const updateSale = async (sale) => {
-    await fetch(`http://localhost:8080/api/sales/update/${sale.id}?email=${email}&date=${date}`, {
+    await fetch(`https://sellsmart-backend.onrender.com/api/sales/update/${sale.id}?email=${email}&date=${date}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...sale, quantitySold: newSaleQuantity }),
@@ -55,14 +55,14 @@ function SalesPage() {
   };
 
   const deleteSale = async (id) => {
-    await fetch(`http://localhost:8080/api/sales/delete/${id}?email=${email}&date=${date}`, {
+    await fetch(`https://sellsmart-backend.onrender.com/api/sales/delete/${id}?email=${email}&date=${date}`, {
       method: "DELETE",
     });
     fetchSales();
   };
 
   const updateDamage = async (item) => {
-    await fetch(`http://localhost:8080/api/damages/update/${item.id}?email=${email}&date=${date}`, {
+    await fetch(`https://sellsmart-backend.onrender.com/api/damages/update/${item.id}?email=${email}&date=${date}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...item, quantityDamaged: newDamageQuantity }),
@@ -72,7 +72,7 @@ function SalesPage() {
   };
 
   const deleteDamage = async (id) => {
-    await fetch(`http://localhost:8080/api/damages/delete/${id}?email=${email}&date=${date}`, {
+    await fetch(`https://sellsmart-backend.onrender.com/api/damages/delete/${id}?email=${email}&date=${date}`, {
       method: "DELETE",
     });
     fetchDamages();
