@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 function SalesPage() {
@@ -17,14 +17,7 @@ function SalesPage() {
   const [deleteType, setDeleteType] = useState("");
   const [deleteId, setDeleteId] = useState(null);
 
-  useEffect(() => {
-    if (email) {
-      fetchSales();
-      fetchDamages();
-    }
-  }, [date]);
-
-  const fetchSales = async () => {
+  const fetchSales = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8080/api/sales/view?email=${email}&date=${date}`);
       const data = await response.json();
@@ -32,9 +25,9 @@ function SalesPage() {
     } catch (error) {
       console.error("Failed to fetch sales:", error);
     }
-  };
+  }, [email, date]);
 
-  const fetchDamages = async () => {
+  const fetchDamages = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8080/api/damages/view?email=${email}&date=${date}`);
       const data = await response.json();
@@ -42,7 +35,14 @@ function SalesPage() {
     } catch (error) {
       console.error("Failed to fetch damages:", error);
     }
-  };
+  }, [email, date]);
+
+  useEffect(() => {
+    if (email) {
+      fetchSales();
+      fetchDamages();
+    }
+  }, [email, fetchSales, fetchDamages]);
 
   const updateSale = async (sale) => {
     await fetch(`http://localhost:8080/api/sales/update/${sale.id}?email=${email}&date=${date}`, {
@@ -82,6 +82,7 @@ function SalesPage() {
   const getTotalSpent = () => sales.reduce((total, s) => total + (s.quantitySold * s.buyPrice), 0);
   const getTotalProfit = () => getTotalEarned() - getTotalSpent();
   const getTotalDamageLoss = () => damages.reduce((total, d) => total + (d.quantityDamaged * d.buyPrice), 0);
+
 
   const styles = {
     wrapper: {
