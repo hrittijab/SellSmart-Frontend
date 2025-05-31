@@ -27,8 +27,8 @@ const MonthDetails = () => {
           `https://sellsmart-backend.onrender.com/api/sales/profit-summary?email=${email}&month=${fullMonth}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -70,11 +70,17 @@ const MonthDetails = () => {
       marginBottom: "1rem",
       textAlign: "center",
     },
-    link: {
+    backLink: {
       display: "inline-block",
-      marginBottom: "1rem",
+      marginBottom: "1.5rem",
+      padding: "8px 16px",
+      backgroundColor: "#007BFF",
+      color: "#fff",
       textDecoration: "none",
-      color: "#007BFF",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+      transition: "background-color 0.3s ease",
     },
     table: {
       width: "100%",
@@ -96,30 +102,20 @@ const MonthDetails = () => {
       fontStyle: "italic",
       color: "#555",
     },
-    backLink: {
-      display: "inline-block",
-      marginBottom: "1.5rem",
-      padding: "8px 16px",
-      backgroundColor: "#007BFF",
-      color: "#fff",
-      textDecoration: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-      transition: "background-color 0.3s ease"
-    }
   };
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <h2 style={styles.heading}>📅 Daily Profits for {month} {year}</h2>
+        <h2 style={styles.heading}>
+          📅 Daily Profits for {month} {year}
+        </h2>
 
         <Link
           to="/report"
           style={styles.backLink}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#0056b3"}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#007BFF"}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0056b3")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#007BFF")}
         >
           ← Back to Report
         </Link>
@@ -140,10 +136,11 @@ const MonthDetails = () => {
               {dailyProfits.map((day, i) => (
                 <tr key={i}>
                   <td style={styles.td}>
-                    {new Date(day.date).toLocaleDateString("en-GB", {
+                    {/* Parse date as UTC to fix timezone shift */}
+                    {new Date(day.date + "T00:00:00Z").toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "long",
-                      year: "numeric"
+                      year: "numeric",
                     })}
                   </td>
                   <td style={styles.td}>{day.profit.toFixed(2)}</td>
