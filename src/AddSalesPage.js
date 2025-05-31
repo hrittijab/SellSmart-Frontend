@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from "react-router-dom";
-
 
 const AddSalesPage = () => {
   const [name, setName] = useState('');
@@ -13,13 +12,7 @@ const AddSalesPage = () => {
   const email = localStorage.getItem('userEmail');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (email) {
-      fetchInventory();
-    }
-  }, [email]);
-
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     try {
       const res = await fetch(`http://localhost:8080/api/inventory/list?email=${email}`);
       const data = await res.json();
@@ -28,7 +21,13 @@ const AddSalesPage = () => {
       console.error("Failed to fetch inventory items", err);
       toast.error("Failed to load inventory items.");
     }
-  };
+  }, [email]);
+
+  useEffect(() => {
+    if (email) {
+      fetchInventory();
+    }
+  }, [email, fetchInventory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,24 +69,12 @@ const AddSalesPage = () => {
       <ToastContainer position="top-center" autoClose={2500} hideProgressBar />
       <div style={styles.container}>
         <Link
-            to="/home"
-            style={{
-            display: "inline-block",
-            marginBottom: "1rem",
-            padding: "8px 18px",
-            backgroundColor: "#4CAF50",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "6px",
-            fontWeight: "bold",
-            fontSize: "15px",
-            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-            transition: "all 0.3s ease"
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#388E3C")}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4CAF50")}
+          to="/home"
+          style={styles.backButton}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#388E3C")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4CAF50")}
         >
-            ← Back to Home
+          ← Back to Home
         </Link>
         <h2 style={styles.heading}>➕ Add Sale</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -162,6 +149,19 @@ const styles = {
     boxShadow: "0 6px 15px rgba(0,0,0,0.1)",
     width: "90%",
     maxWidth: "420px",
+  },
+  backButton: {
+    display: "inline-block",
+    marginBottom: "1rem",
+    padding: "8px 18px",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    textDecoration: "none",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    fontSize: "15px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+    transition: "all 0.3s ease"
   },
   heading: {
     textAlign: "center",

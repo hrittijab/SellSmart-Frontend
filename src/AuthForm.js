@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,10 +10,10 @@ const AuthForm = () => {
   const [message, setMessage] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
+const [, setIsAuthorized] = useState(false);
   const navigate = useNavigate();
 
-  const checkEmail = async () => {
+  const checkEmail = useCallback(async () => {
     if (!email) {
       setMessage('Please enter an email');
       return;
@@ -36,40 +36,39 @@ const AuthForm = () => {
       setMessage('Backend error occurred');
       setIsAuthorized(false);
     }
-  };
+  }, [email]);
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
 
-  if (!email || !password) {
-    setMessage('Email and password are required');
-    return;
-  }
-
-  if (step === 'signup' && password !== confirmPassword) {
-    setMessage('Passwords do not match');
-    return;
-  }
-
-  const endpoint = step === 'signup' ? '/register' : '/login';
-
-  try {
-    const res = await axios.post(`${BASE_URL}${endpoint}`, {
-      email: email.trim().toLowerCase(),
-      password,
-    });
-
-    localStorage.setItem('userEmail', email.trim().toLowerCase());
-
-    setMessage(res.data);
-
-    if (step === 'login' || step === 'signup') {
-      navigate('/home');
+    if (!email || !password) {
+      setMessage('Email and password are required');
+      return;
     }
-  } catch (err) {
-    setMessage(err.response?.data || 'Error occurred');
-  }
-};
+
+    if (step === 'signup' && password !== confirmPassword) {
+      setMessage('Passwords do not match');
+      return;
+    }
+
+    const endpoint = step === 'signup' ? '/register' : '/login';
+
+    try {
+      const res = await axios.post(`${BASE_URL}${endpoint}`, {
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      localStorage.setItem('userEmail', email.trim().toLowerCase());
+      setMessage(res.data);
+
+      if (step === 'login' || step === 'signup') {
+        navigate('/home');
+      }
+    } catch (err) {
+      setMessage(err.response?.data || 'Error occurred');
+    }
+  }, [email, password, confirmPassword, step, navigate]);
 
   const styles = {
     wrapper: {

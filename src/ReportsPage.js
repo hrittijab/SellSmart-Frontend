@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const months = [
@@ -20,13 +20,9 @@ function Report() {
   const [filteredSales, setFilteredSales] = useState([]);
   const [filteredDamages, setFilteredDamages] = useState([]);
 
-  useEffect(() => {
-    if (email) fetchYearlyProfits(year);
-  }, [year]);
-
-  const fetchYearlyProfits = async (year) => {
+  const fetchYearlyProfits = useCallback(async (selectedYear) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/sales/yearly-profit-summary?email=${email}&year=${year}`);
+      const res = await fetch(`http://localhost:8080/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`);
       const data = await res.json();
       setMonthlyProfits(data);
       const total = data.reduce((sum, entry) => sum + entry.profit, 0);
@@ -34,13 +30,9 @@ function Report() {
     } catch (err) {
       console.error("Yearly profit fetch failed:", err);
     }
-  };
+  }, [email]);
 
-  const handleMonthClick = (monthName) => {
-    navigate(`/month/${year}/${monthName}`);
-  };
-
-  const fetchFilteredData = async () => {
+  const fetchFilteredData = useCallback(async () => {
     if (!fromDate || !toDate) return;
     try {
       const salesRes = await fetch(`http://localhost:8080/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`);
@@ -53,6 +45,14 @@ function Report() {
     } catch (err) {
       console.error("Error fetching filtered data:", err);
     }
+  }, [email, fromDate, toDate]);
+
+  useEffect(() => {
+    if (email) fetchYearlyProfits(year);
+  }, [email, year, fetchYearlyProfits]);
+
+  const handleMonthClick = (monthName) => {
+    navigate(`/month/${year}/${monthName}`);
   };
 
   const getFilteredIncome = () => filteredSales.reduce((sum, s) => sum + s.quantitySold * s.sellPrice, 0);
@@ -130,26 +130,25 @@ function Report() {
     <div style={styles.page}>
       <div style={styles.container}>
         <Link
-  to="/home"
-  style={{
-    display: "inline-block",
-    marginBottom: "1rem",
-    padding: "8px 18px",
-    backgroundColor: "#4CAF50",
-    color: "#fff",
-    textDecoration: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    fontSize: "15px",
-    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-    transition: "all 0.3s ease"
-  }}
-  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#388E3C")}
-  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4CAF50")}
->
-  ← Back to Home
-</Link>
-
+          to="/home"
+          style={{
+            display: "inline-block",
+            marginBottom: "1rem",
+            padding: "8px 18px",
+            backgroundColor: "#4CAF50",
+            color: "#fff",
+            textDecoration: "none",
+            borderRadius: "6px",
+            fontWeight: "bold",
+            fontSize: "15px",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+            transition: "all 0.3s ease"
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#388E3C")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4CAF50")}
+        >
+          ← Back to Home
+        </Link>
 
         <h2 style={styles.sectionTitle}>📊 Profit Report</h2>
 
@@ -198,7 +197,6 @@ function Report() {
           </tfoot>
         </table>
 
-        {/* Filter Section */}
         <h3 style={styles.sectionTitle}>📅 Filter by Date Range</h3>
         <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
           <label>From:

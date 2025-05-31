@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
@@ -29,18 +29,18 @@ const Inventory = () => {
     setEmail(storedEmail);
   }, []);
 
-  useEffect(() => {
-    if (email) fetchInventory();
-  }, [email]);
-
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     try {
       const res = await axios.get(`${BASE_URL}/all?email=${email}`);
       setItems(res.data);
     } catch (err) {
       toast.error('❌ Failed to fetch inventory.');
     }
-  };
+  }, [email]);
+
+  useEffect(() => {
+    if (email) fetchInventory();
+  }, [email, fetchInventory]);
 
   const handleSubmit = async () => {
     if (!newItem.name) return toast.warn('Name is required');
@@ -174,7 +174,6 @@ const Inventory = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div style={styles.modalBackdrop}>
           <div style={styles.modal}>
