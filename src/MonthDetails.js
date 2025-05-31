@@ -50,6 +50,16 @@ const MonthDetails = () => {
     }
   }, [year, month, navigate]);
 
+  // Helper function to format YYYY-MM-DD string manually to "D Month YYYY"
+  const formatDate = (dateStr) => {
+    const [year, month, day] = dateStr.split("-");
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return `${parseInt(day)} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
+  };
+
   const styles = {
     page: {
       minHeight: "100vh",
@@ -136,12 +146,7 @@ const MonthDetails = () => {
               {dailyProfits.map((day, i) => (
                 <tr key={i}>
                   <td style={styles.td}>
-                    {/* Parse date as UTC midnight to avoid timezone shifts */}
-                    {new Date(day.date + "T00:00:00Z").toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {formatDate(day.date)}
                   </td>
                   <td style={styles.td}>{day.profit.toFixed(2)}</td>
                 </tr>
