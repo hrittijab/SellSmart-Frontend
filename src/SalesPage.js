@@ -6,7 +6,7 @@ function SalesPage() {
   const [damages, setDamages] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const email = localStorage.getItem("userEmail");
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("jwtToken") || localStorage.getItem("token");
 
   const [editingSaleId, setEditingSaleId] = useState(null);
   const [newSaleQuantity, setNewSaleQuantity] = useState(0);
@@ -60,127 +60,148 @@ function SalesPage() {
   }, [email, token, fetchSales, fetchDamages]);
 
   const updateSale = async (sale) => {
-    await fetch(
-      `https://sellsmart-backend.onrender.com/api/sales/update/${sale.id}?email=${email}&date=${date}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...sale, quantitySold: newSaleQuantity }),
-      }
-    );
-    setEditingSaleId(null);
-    fetchSales();
+    try {
+      await fetch(
+        `https://sellsmart-backend.onrender.com/api/sales/update/${sale.id}?email=${email}&date=${date}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...sale, quantitySold: newSaleQuantity }),
+        }
+      );
+      setEditingSaleId(null);
+      setNewSaleQuantity(0);
+      await fetchSales();
+    } catch (error) {
+      console.error("Failed to update sale:", error);
+    }
   };
 
   const deleteSale = async (id) => {
-    await fetch(
-      `https://sellsmart-backend.onrender.com/api/sales/delete/${id}?email=${email}&date=${date}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    fetchSales();
+    try {
+      await fetch(
+        `https://sellsmart-backend.onrender.com/api/sales/delete/${id}?email=${email}&date=${date}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await fetchSales();
+    } catch (error) {
+      console.error("Failed to delete sale:", error);
+    }
   };
 
   const updateDamage = async (item) => {
-    await fetch(
-      `https://sellsmart-backend.onrender.com/api/damages/update/${item.id}?email=${email}&date=${date}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...item, quantityDamaged: newDamageQuantity }),
-      }
-    );
-    setEditingDamageId(null);
-    fetchDamages();
+    try {
+      await fetch(
+        `https://sellsmart-backend.onrender.com/api/damages/update/${item.id}?email=${email}&date=${date}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, quantityDamaged: newDamageQuantity }),
+        }
+      );
+      setEditingDamageId(null);
+      setNewDamageQuantity(0);
+      await fetchDamages();
+    } catch (error) {
+      console.error("Failed to update damage:", error);
+    }
   };
 
   const deleteDamage = async (id) => {
-    await fetch(
-      `https://sellsmart-backend.onrender.com/api/damages/delete/${id}?email=${email}&date=${date}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    fetchDamages();
+    try {
+      await fetch(
+        `https://sellsmart-backend.onrender.com/api/damages/delete/${id}?email=${email}&date=${date}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await fetchDamages();
+    } catch (error) {
+      console.error("Failed to delete damage:", error);
+    }
   };
 
-  const getTotalEarned = () => sales.reduce((total, s) => total + (s.quantitySold * s.sellPrice), 0);
-  const getTotalSpent = () => sales.reduce((total, s) => total + (s.quantitySold * s.buyPrice), 0);
+  const getTotalEarned = () =>
+    sales.reduce((total, s) => total + s.quantitySold * s.sellPrice, 0);
+  const getTotalSpent = () =>
+    sales.reduce((total, s) => total + s.quantitySold * s.buyPrice, 0);
   const getTotalProfit = () => getTotalEarned() - getTotalSpent();
-  const getTotalDamageLoss = () => damages.reduce((total, d) => total + (d.quantityDamaged * d.buyPrice), 0);
-
+  const getTotalDamageLoss = () =>
+    damages.reduce((total, d) => total + d.quantityDamaged * d.buyPrice, 0);
 
   const styles = {
     wrapper: {
-      minHeight: '100vh',
-      background: 'linear-gradient(to bottom right, #e0f8d8, rgb(167, 201, 124), rgb(121, 184, 91))',
-      padding: '2rem',
-      fontFamily: 'Segoe UI, sans-serif',
+      minHeight: "100vh",
+      background:
+        "linear-gradient(to bottom right, #e0f8d8, rgb(167, 201, 124), rgb(121, 184, 91))",
+      padding: "2rem",
+      fontFamily: "Segoe UI, sans-serif",
     },
     sectionTitle: {
-      fontSize: '22px',
-      marginBottom: '1rem',
-      color: '#333',
+      fontSize: "22px",
+      marginBottom: "1rem",
+      color: "#333",
     },
     dateInput: {
-      fontSize: '16px',
-      padding: '8px',
-      borderRadius: '6px',
-      border: '1px solid #ccc',
-      marginBottom: '1rem',
+      fontSize: "16px",
+      padding: "8px",
+      borderRadius: "6px",
+      border: "1px solid #ccc",
+      marginBottom: "1rem",
     },
     table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      marginBottom: '2rem',
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+      width: "100%",
+      borderCollapse: "collapse",
+      marginBottom: "2rem",
+      backgroundColor: "#fff",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.06)",
     },
     th: {
-      backgroundColor: '#4CAF50',
-      color: '#fff',
-      padding: '10px',
+      backgroundColor: "#4CAF50",
+      color: "#fff",
+      padding: "10px",
     },
     td: {
-      padding: '10px',
-      textAlign: 'center',
+      padding: "10px",
+      textAlign: "center",
     },
     button: {
-      padding: '6px 10px',
-      borderRadius: '5px',
-      border: 'none',
-      cursor: 'pointer',
-      fontWeight: '500',
-      margin: '0 2px',
+      padding: "6px 10px",
+      borderRadius: "5px",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: "500",
+      margin: "0 2px",
     },
     editBtn: {
-      backgroundColor: '#2196F3',
-      color: '#fff',
+      backgroundColor: "#2196F3",
+      color: "#fff",
     },
     deleteBtn: {
-      backgroundColor: '#f44336',
-      color: '#fff',
+      backgroundColor: "#f44336",
+      color: "#fff",
     },
     saveBtn: {
-      backgroundColor: '#4CAF50',
-      color: '#fff',
+      backgroundColor: "#4CAF50",
+      color: "#fff",
     },
     cancelBtn: {
-      backgroundColor: '#777',
-      color: '#fff',
+      backgroundColor: "#777",
+      color: "#fff",
     },
     modalBackdrop: {
       position: "fixed",
@@ -207,19 +228,22 @@ function SalesPage() {
 
   return (
     <div style={styles.wrapper}>
-      <Link to="/home" style={{
-        display: "inline-block",
-        marginBottom: "1rem",
-        padding: "8px 18px",
-        backgroundColor: "#4CAF50",
-        color: "#fff",
-        textDecoration: "none",
-        borderRadius: "6px",
-        fontWeight: "bold",
-        fontSize: "15px",
-        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-        transition: "all 0.3s ease"
-      }}>
+      <Link
+        to="/home"
+        style={{
+          display: "inline-block",
+          marginBottom: "1rem",
+          padding: "8px 18px",
+          backgroundColor: "#4CAF50",
+          color: "#fff",
+          textDecoration: "none",
+          borderRadius: "6px",
+          fontWeight: "bold",
+          fontSize: "15px",
+          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+          transition: "all 0.3s ease",
+        }}
+      >
         ← Back to Home
       </Link>
 
@@ -249,7 +273,11 @@ function SalesPage() {
         </thead>
         <tbody>
           {sales.length === 0 ? (
-            <tr><td colSpan="8" style={styles.td}>No sales found</td></tr>
+            <tr>
+              <td colSpan="8" style={styles.td}>
+                No sales found
+              </td>
+            </tr>
           ) : (
             sales.map((sale) => {
               const totalEarned = sale.quantitySold * sale.sellPrice;
@@ -261,9 +289,15 @@ function SalesPage() {
                   <td style={styles.td}>{sale.name}</td>
                   <td style={styles.td}>
                     {editingSaleId === sale.id ? (
-                      <input type="number" min="1" value={newSaleQuantity}
-                        onChange={(e) => setNewSaleQuantity(Number(e.target.value))} />
-                    ) : sale.quantitySold}
+                      <input
+                        type="number"
+                        min="1"
+                        value={newSaleQuantity}
+                        onChange={(e) => setNewSaleQuantity(Number(e.target.value))}
+                      />
+                    ) : (
+                      sale.quantitySold
+                    )}
                   </td>
                   <td style={styles.td}>{sale.sellPrice.toFixed(2)}</td>
                   <td style={styles.td}>{sale.buyPrice.toFixed(2)}</td>
@@ -273,21 +307,43 @@ function SalesPage() {
                   <td style={styles.td}>
                     {editingSaleId === sale.id ? (
                       <>
-                        <button style={{ ...styles.button, ...styles.saveBtn }} onClick={() => updateSale(sale)}>Save</button>
-                        <button style={{ ...styles.button, ...styles.cancelBtn }} onClick={() => setEditingSaleId(null)}>Cancel</button>
+                        <button
+                          style={{ ...styles.button, ...styles.saveBtn }}
+                          onClick={() => updateSale(sale)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          style={{ ...styles.button, ...styles.cancelBtn }}
+                          onClick={() => {
+                            setEditingSaleId(null);
+                            setNewSaleQuantity(0);
+                          }}
+                        >
+                          Cancel
+                        </button>
                       </>
                     ) : (
                       <>
-                        <button style={{ ...styles.button, ...styles.editBtn }} onClick={() => {
-                          setEditingSaleId(sale.id);
-                          setNewSaleQuantity(sale.quantitySold);
-                        }}>Edit</button>
-                        <button style={{ ...styles.button, ...styles.deleteBtn }}
+                        <button
+                          style={{ ...styles.button, ...styles.editBtn }}
+                          onClick={() => {
+                            setEditingSaleId(sale.id);
+                            setNewSaleQuantity(sale.quantitySold);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          style={{ ...styles.button, ...styles.deleteBtn }}
                           onClick={() => {
                             setDeleteType("sale");
                             setDeleteId(sale.id);
                             setShowDeleteModal(true);
-                          }}>Delete</button>
+                          }}
+                        >
+                          Delete
+                        </button>
                       </>
                     )}
                   </td>
@@ -299,10 +355,18 @@ function SalesPage() {
         {sales.length > 0 && (
           <tfoot>
             <tr>
-              <td colSpan="4" style={styles.td}><strong>Total</strong></td>
-              <td style={styles.td}><strong>৳ {getTotalEarned().toFixed(2)}</strong></td>
-              <td style={styles.td}><strong>৳ {getTotalSpent().toFixed(2)}</strong></td>
-              <td style={styles.td}><strong>৳ {getTotalProfit().toFixed(2)}</strong></td>
+              <td colSpan="4" style={styles.td}>
+                <strong>Total</strong>
+              </td>
+              <td style={styles.td}>
+                <strong>৳ {getTotalEarned().toFixed(2)}</strong>
+              </td>
+              <td style={styles.td}>
+                <strong>৳ {getTotalSpent().toFixed(2)}</strong>
+              </td>
+              <td style={styles.td}>
+                <strong>৳ {getTotalProfit().toFixed(2)}</strong>
+              </td>
               <td style={styles.td}></td>
             </tr>
           </tfoot>
@@ -322,7 +386,11 @@ function SalesPage() {
         </thead>
         <tbody>
           {damages.length === 0 ? (
-            <tr><td colSpan="5" style={styles.td}>No damaged items reported</td></tr>
+            <tr>
+              <td colSpan="5" style={styles.td}>
+                No damaged items reported
+              </td>
+            </tr>
           ) : (
             damages.map((item) => {
               const loss = item.quantityDamaged * item.buyPrice;
@@ -331,30 +399,58 @@ function SalesPage() {
                   <td style={styles.td}>{item.name}</td>
                   <td style={styles.td}>
                     {editingDamageId === item.id ? (
-                      <input type="number" min="1" value={newDamageQuantity}
-                        onChange={(e) => setNewDamageQuantity(Number(e.target.value))} />
-                    ) : item.quantityDamaged}
+                      <input
+                        type="number"
+                        min="1"
+                        value={newDamageQuantity}
+                        onChange={(e) => setNewDamageQuantity(Number(e.target.value))}
+                      />
+                    ) : (
+                      item.quantityDamaged
+                    )}
                   </td>
                   <td style={styles.td}>{item.buyPrice.toFixed(2)}</td>
                   <td style={styles.td}>{loss.toFixed(2)}</td>
                   <td style={styles.td}>
                     {editingDamageId === item.id ? (
                       <>
-                        <button style={{ ...styles.button, ...styles.saveBtn }} onClick={() => updateDamage(item)}>Save</button>
-                        <button style={{ ...styles.button, ...styles.cancelBtn }} onClick={() => setEditingDamageId(null)}>Cancel</button>
+                        <button
+                          style={{ ...styles.button, ...styles.saveBtn }}
+                          onClick={() => updateDamage(item)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          style={{ ...styles.button, ...styles.cancelBtn }}
+                          onClick={() => {
+                            setEditingDamageId(null);
+                            setNewDamageQuantity(0);
+                          }}
+                        >
+                          Cancel
+                        </button>
                       </>
                     ) : (
                       <>
-                        <button style={{ ...styles.button, ...styles.editBtn }} onClick={() => {
-                          setEditingDamageId(item.id);
-                          setNewDamageQuantity(item.quantityDamaged);
-                        }}>Edit</button>
-                        <button style={{ ...styles.button, ...styles.deleteBtn }}
+                        <button
+                          style={{ ...styles.button, ...styles.editBtn }}
+                          onClick={() => {
+                            setEditingDamageId(item.id);
+                            setNewDamageQuantity(item.quantityDamaged);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          style={{ ...styles.button, ...styles.deleteBtn }}
                           onClick={() => {
                             setDeleteType("damage");
                             setDeleteId(item.id);
                             setShowDeleteModal(true);
-                          }}>Delete</button>
+                          }}
+                        >
+                          Delete
+                        </button>
                       </>
                     )}
                   </td>
@@ -366,8 +462,12 @@ function SalesPage() {
         {damages.length > 0 && (
           <tfoot>
             <tr>
-              <td colSpan="3" style={styles.td}><strong>Total Loss</strong></td>
-              <td style={styles.td}><strong>৳ {getTotalDamageLoss().toFixed(2)}</strong></td>
+              <td colSpan="3" style={styles.td}>
+                <strong>Total Loss</strong>
+              </td>
+              <td style={styles.td}>
+                <strong>৳ {getTotalDamageLoss().toFixed(2)}</strong>
+              </td>
               <td style={styles.td}></td>
             </tr>
           </tfoot>
@@ -379,7 +479,10 @@ function SalesPage() {
         <div style={styles.modalBackdrop}>
           <div style={styles.modal}>
             <h3>⚠️ Confirm Deletion</h3>
-            <p>Are you sure you want to delete this {deleteType === "sale" ? "sale" : "damaged item"}?</p>
+            <p>
+              Are you sure you want to delete this{" "}
+              {deleteType === "sale" ? "sale" : "damaged item"}?
+            </p>
             <div style={{ marginTop: "1.5rem" }}>
               <button
                 onClick={() => {
