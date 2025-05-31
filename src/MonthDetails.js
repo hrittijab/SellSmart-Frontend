@@ -136,7 +136,7 @@ const MonthDetails = () => {
               {dailyProfits.map((day, i) => (
                 <tr key={i}>
                   <td style={styles.td}>
-                    {/* Parse date as UTC to fix timezone shift */}
+                    {/* Parse date as UTC midnight to avoid timezone shifts */}
                     {new Date(day.date + "T00:00:00Z").toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "long",

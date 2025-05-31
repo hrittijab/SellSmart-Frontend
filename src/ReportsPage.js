@@ -26,9 +26,7 @@ function Report() {
       const res = await fetch(
         `https://sellsmart-backend.onrender.com/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -49,26 +47,38 @@ function Report() {
     try {
       const salesRes = await fetch(
         `https://sellsmart-backend.onrender.com/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       const salesData = await salesRes.json();
-      setFilteredSales(salesData);
 
       const damageRes = await fetch(
         `https://sellsmart-backend.onrender.com/api/damages/between?email=${email}&from=${fromDate}&to=${toDate}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       const damageData = await damageRes.json();
+
+      // Aggregate sales by product name to remove duplicates and sum quantities & totals
+      const aggregatedSales = salesData.reduce((acc, sale) => {
+        const key = sale.name.trim().toLowerCase(); // normalize for key
+        if (!acc[key]) {
+          acc[key] = { ...sale };
+        } else {
+          acc[key].quantitySold += sale.quantitySold;
+          // Assuming sellPrice and buyPrice remain the same for the same product
+          acc[key].totalEarned = (acc[key].quantitySold * acc[key].sellPrice);
+          acc[key].totalSpent = (acc[key].quantitySold * acc[key].buyPrice);
+        }
+        return acc;
+      }, {});
+
+      // Convert back to array, fix totalEarned and totalSpent if missing
+      const filteredSalesAggregated = Object.values(aggregatedSales).map(item => ({
+        ...item,
+        totalEarned: item.quantitySold * item.sellPrice,
+        totalSpent: item.quantitySold * item.buyPrice,
+      }));
+
+      setFilteredSales(filteredSalesAggregated);
       setFilteredDamages(damageData);
     } catch (err) {
       console.error("Error fetching filtered data:", err);
