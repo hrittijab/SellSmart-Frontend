@@ -15,7 +15,7 @@ const MonthDetails = () => {
         const fullMonth = `${year}-${paddedMonth}`;
 
         const res = await fetch(
-          `http://localhost:8080/api/sales/profit-summary?email=${email}&month=${fullMonth}`
+          `https://sellsmart-backend.onrender.com/api/sales/profit-summary?email=${email}&month=${fullMonth}`
         );
         const data = await res.json();
         setDailyProfits(data);

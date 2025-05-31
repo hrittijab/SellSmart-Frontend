@@ -14,7 +14,7 @@ const AddDamageGoods = () => {
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/inventory/list?email=${email}`);
+      const res = await fetch(`https://sellsmart-backend.onrender.com/api/inventory/list?email=${email}`);
       const data = await res.json();
       setInventoryItems(data);
     } catch (err) {
@@ -37,7 +37,7 @@ const AddDamageGoods = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/damages/report?email=${email}&date=${date}`,
+        `https://sellsmart-backend.onrender.com/api/damages/report?email=${email}&date=${date}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

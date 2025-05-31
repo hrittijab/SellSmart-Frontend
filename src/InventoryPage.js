@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const BASE_URL = 'http://localhost:8080/api/inventory';
+const BASE_URL = 'https://sellsmart-backend.onrender.com/api/inventory';
 
 const Inventory = () => {
   const [email, setEmail] = useState('');
