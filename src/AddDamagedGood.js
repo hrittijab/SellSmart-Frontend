@@ -10,22 +10,27 @@ const AddDamageGoods = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [inventoryItems, setInventoryItems] = useState([]);
   const email = localStorage.getItem("userEmail");
+  const token = localStorage.getItem("jwtToken");
   const navigate = useNavigate();
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await fetch(`https://sellsmart-backend.onrender.com/api/inventory/list?email=${email}`);
+      const res = await fetch(`https://sellsmart-backend.onrender.com/api/inventory/list?email=${email}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setInventoryItems(data);
     } catch (err) {
       console.error("Failed to fetch inventory items", err);
       toast.error("Failed to load inventory!");
     }
-  }, [email]);
+  }, [email, token]);
 
   useEffect(() => {
-    if (email) fetchInventory();
-  }, [email, fetchInventory]);
+    if (email && token) fetchInventory();
+  }, [email, token, fetchInventory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +45,10 @@ const AddDamageGoods = () => {
         `https://sellsmart-backend.onrender.com/api/damages/report?email=${email}&date=${date}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify([damageItem]),
         }
       );
@@ -57,6 +65,10 @@ const AddDamageGoods = () => {
       toast.error("Something went wrong.");
     }
   };
+
+  if (!email) {
+    return <p style={{ textAlign: 'center', marginTop: '2rem' }}>⚠️ No logged-in user found. Please log in again.</p>;
+  }
 
   return (
     <div style={styles.page}>

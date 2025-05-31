@@ -6,6 +6,7 @@ function SalesPage() {
   const [damages, setDamages] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const email = localStorage.getItem("userEmail");
+  const token = localStorage.getItem("token");
 
   const [editingSaleId, setEditingSaleId] = useState(null);
   const [newSaleQuantity, setNewSaleQuantity] = useState(0);
@@ -19,62 +20,100 @@ function SalesPage() {
 
   const fetchSales = useCallback(async () => {
     try {
-      const response = await fetch(`https://sellsmart-backend.onrender.com/api/sales/view?email=${email}&date=${date}`);
+      const response = await fetch(
+        `https://sellsmart-backend.onrender.com/api/sales/view?email=${email}&date=${date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await response.json();
       setSales(data);
     } catch (error) {
       console.error("Failed to fetch sales:", error);
     }
-  }, [email, date]);
+  }, [email, date, token]);
 
   const fetchDamages = useCallback(async () => {
     try {
-      const response = await fetch(`https://sellsmart-backend.onrender.com/api/damages/view?email=${email}&date=${date}`);
+      const response = await fetch(
+        `https://sellsmart-backend.onrender.com/api/damages/view?email=${email}&date=${date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await response.json();
       setDamages(data);
     } catch (error) {
       console.error("Failed to fetch damages:", error);
     }
-  }, [email, date]);
+  }, [email, date, token]);
 
   useEffect(() => {
-    if (email) {
+    if (email && token) {
       fetchSales();
       fetchDamages();
     }
-  }, [email, fetchSales, fetchDamages]);
+  }, [email, token, fetchSales, fetchDamages]);
 
   const updateSale = async (sale) => {
-    await fetch(`https://sellsmart-backend.onrender.com/api/sales/update/${sale.id}?email=${email}&date=${date}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...sale, quantitySold: newSaleQuantity }),
-    });
+    await fetch(
+      `https://sellsmart-backend.onrender.com/api/sales/update/${sale.id}?email=${email}&date=${date}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...sale, quantitySold: newSaleQuantity }),
+      }
+    );
     setEditingSaleId(null);
     fetchSales();
   };
 
   const deleteSale = async (id) => {
-    await fetch(`https://sellsmart-backend.onrender.com/api/sales/delete/${id}?email=${email}&date=${date}`, {
-      method: "DELETE",
-    });
+    await fetch(
+      `https://sellsmart-backend.onrender.com/api/sales/delete/${id}?email=${email}&date=${date}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     fetchSales();
   };
 
   const updateDamage = async (item) => {
-    await fetch(`https://sellsmart-backend.onrender.com/api/damages/update/${item.id}?email=${email}&date=${date}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...item, quantityDamaged: newDamageQuantity }),
-    });
+    await fetch(
+      `https://sellsmart-backend.onrender.com/api/damages/update/${item.id}?email=${email}&date=${date}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...item, quantityDamaged: newDamageQuantity }),
+      }
+    );
     setEditingDamageId(null);
     fetchDamages();
   };
 
   const deleteDamage = async (id) => {
-    await fetch(`https://sellsmart-backend.onrender.com/api/damages/delete/${id}?email=${email}&date=${date}`, {
-      method: "DELETE",
-    });
+    await fetch(
+      `https://sellsmart-backend.onrender.com/api/damages/delete/${id}?email=${email}&date=${date}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     fetchDamages();
   };
 

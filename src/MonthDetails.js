@@ -1,22 +1,41 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const MonthDetails = () => {
   const { year, month } = useParams();
-  const email = localStorage.getItem("userEmail");
   const [dailyProfits, setDailyProfits] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDailyProfits = async () => {
       try {
+        const email = localStorage.getItem("userEmail");
+        const token = localStorage.getItem("jwtToken");
+
+        if (!email || !token) {
+          alert("Unauthorized. Please log in.");
+          navigate("/");
+          return;
+        }
+
         const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
         const paddedMonth = String(monthIndex + 1).padStart(2, "0");
         const fullMonth = `${year}-${paddedMonth}`;
 
         const res = await fetch(
-          `https://sellsmart-backend.onrender.com/api/sales/profit-summary?email=${email}&month=${fullMonth}`
+          `https://sellsmart-backend.onrender.com/api/sales/profit-summary?email=${email}&month=${fullMonth}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
         );
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+
         const data = await res.json();
         setDailyProfits(data);
       } catch (err) {
@@ -26,10 +45,10 @@ const MonthDetails = () => {
       }
     };
 
-    if (email && year && month) {
+    if (year && month) {
       fetchDailyProfits();
     }
-  }, [email, year, month]);
+  }, [year, month, navigate]);
 
   const styles = {
     page: {
@@ -76,6 +95,18 @@ const MonthDetails = () => {
       textAlign: "center",
       fontStyle: "italic",
       color: "#555",
+    },
+    backLink: {
+      display: "inline-block",
+      marginBottom: "1.5rem",
+      padding: "8px 16px",
+      backgroundColor: "#007BFF",
+      color: "#fff",
+      textDecoration: "none",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+      transition: "background-color 0.3s ease"
     }
   };
 
@@ -83,23 +114,15 @@ const MonthDetails = () => {
     <div style={styles.page}>
       <div style={styles.container}>
         <h2 style={styles.heading}>📅 Daily Profits for {month} {year}</h2>
-    <Link to="/report" style={{
-    display: "inline-block",
-    marginBottom: "1.5rem",
-    padding: "8px 16px",
-    backgroundColor: "#007BFF",
-    color: "#fff",
-    textDecoration: "none",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-    transition: "background-color 0.3s ease"
-    }}
-    onMouseEnter={e => e.currentTarget.style.backgroundColor = "#0056b3"}
-    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#007BFF"}
-    >
-    ← Back to Report
-    </Link>
+
+        <Link
+          to="/report"
+          style={styles.backLink}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#0056b3"}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#007BFF"}
+        >
+          ← Back to Report
+        </Link>
 
         {loading ? (
           <p style={styles.noData}>Loading...</p>

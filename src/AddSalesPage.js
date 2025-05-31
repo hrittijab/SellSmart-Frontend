@@ -10,18 +10,21 @@ const AddSalesPage = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [inventoryItems, setInventoryItems] = useState([]);
   const email = localStorage.getItem('userEmail');
+  const token = localStorage.getItem("jwtToken");
   const navigate = useNavigate();
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/inventory/list?email=${email}`);
+      const res = await fetch(`https://sellsmart-backend.onrender.com/api/inventory/list?email=${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setInventoryItems(data);
     } catch (err) {
       console.error("Failed to fetch inventory items", err);
       toast.error("Failed to load inventory items.");
     }
-  }, [email]);
+  }, [email, token]);
 
   useEffect(() => {
     if (email) {
@@ -39,10 +42,13 @@ const AddSalesPage = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/sales/add?email=${email}&date=${date}`,
+        `https://sellsmart-backend.onrender.com/api/sales/add?email=${email}&date=${date}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify([saleItem]),
         }
       );

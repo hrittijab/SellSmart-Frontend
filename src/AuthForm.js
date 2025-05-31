@@ -10,7 +10,6 @@ const AuthForm = () => {
   const [message, setMessage] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-const [, setIsAuthorized] = useState(false);
   const navigate = useNavigate();
 
   const checkEmail = useCallback(async () => {
@@ -25,16 +24,13 @@ const [, setIsAuthorized] = useState(false);
 
       if (!authorized) {
         setMessage('Email is not authorized to use this app');
-        setIsAuthorized(false);
         return;
       }
 
-      setIsAuthorized(true);
       setStep(registered ? 'login' : 'signup');
       setMessage('');
     } catch (err) {
       setMessage('Backend error occurred');
-      setIsAuthorized(false);
     }
   }, [email]);
 
@@ -59,11 +55,13 @@ const [, setIsAuthorized] = useState(false);
         password,
       });
 
-      localStorage.setItem('userEmail', email.trim().toLowerCase());
-      setMessage(res.data);
-
-      if (step === 'login' || step === 'signup') {
+      if (res.data.token) {
+        localStorage.setItem('jwtToken', res.data.token);
+        localStorage.setItem('userEmail', email.trim().toLowerCase());
+        setMessage('Login successful!');
         navigate('/home');
+      } else {
+        setMessage('Authentication failed: No token received.');
       }
     } catch (err) {
       setMessage(err.response?.data || 'Error occurred');
@@ -72,14 +70,13 @@ const [, setIsAuthorized] = useState(false);
 
   const styles = {
     wrapper: {
-        minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #e0f8d8,rgb(167, 201, 124),rgb(121, 184, 91))',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
+      minHeight: '100vh',
+      background: 'linear-gradient(to bottom right, #e0f8d8,rgb(167, 201, 124),rgb(121, 184, 91))',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '20px',
     },
-
     container: {
       maxWidth: 400,
       width: '100%',
@@ -127,7 +124,7 @@ const [, setIsAuthorized] = useState(false);
       fontSize: 14,
       color: '#555',
       marginBottom: 12,
-    }
+    },
   };
 
   return (

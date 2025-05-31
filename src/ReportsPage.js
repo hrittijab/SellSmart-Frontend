@@ -8,6 +8,7 @@ const months = [
 
 function Report() {
   const email = localStorage.getItem("userEmail");
+  const token = localStorage.getItem("jwtToken");
   const currentYear = new Date().getFullYear();
   const navigate = useNavigate();
 
@@ -22,7 +23,17 @@ function Report() {
 
   const fetchYearlyProfits = useCallback(async (selectedYear) => {
     try {
-      const res = await fetch(`https://sellsmart-backend.onrender.com/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`);
+      const res = await fetch(
+        `https://sellsmart-backend.onrender.com/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!res.ok) throw new Error("Unauthorized");
+
       const data = await res.json();
       setMonthlyProfits(data);
       const total = data.reduce((sum, entry) => sum + entry.profit, 0);
@@ -30,26 +41,48 @@ function Report() {
     } catch (err) {
       console.error("Yearly profit fetch failed:", err);
     }
-  }, [email]);
+  }, [email, token]);
 
   const fetchFilteredData = useCallback(async () => {
     if (!fromDate || !toDate) return;
+
     try {
-      const salesRes = await fetch(`https://sellsmart-backend.onrender.com/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`);
+      const salesRes = await fetch(
+        `https://sellsmart-backend.onrender.com/api/sales/between?email=${email}&from=${fromDate}&to=${toDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
       const salesData = await salesRes.json();
       setFilteredSales(salesData);
 
-      const damageRes = await fetch(`https://sellsmart-backend.onrender.com/api/damages/between?email=${email}&from=${fromDate}&to=${toDate}`);
+      const damageRes = await fetch(
+        `https://sellsmart-backend.onrender.com/api/damages/between?email=${email}&from=${fromDate}&to=${toDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
       const damageData = await damageRes.json();
       setFilteredDamages(damageData);
     } catch (err) {
       console.error("Error fetching filtered data:", err);
     }
-  }, [email, fromDate, toDate]);
+  }, [email, token, fromDate, toDate]);
 
   useEffect(() => {
-    if (email) fetchYearlyProfits(year);
-  }, [email, year, fetchYearlyProfits]);
+    if (!email || !token) {
+      alert("Please log in first.");
+      navigate("/");
+      return;
+    }
+    fetchYearlyProfits(year);
+  }, [email, token, year, fetchYearlyProfits, navigate]);
 
   const handleMonthClick = (monthName) => {
     navigate(`/month/${year}/${monthName}`);
@@ -57,8 +90,6 @@ function Report() {
 
   const getFilteredIncome = () => filteredSales.reduce((sum, s) => sum + s.quantitySold * s.sellPrice, 0);
   const getFilteredProfit = () => filteredSales.reduce((sum, s) => sum + (s.sellPrice - s.buyPrice) * s.quantitySold, 0);
-
-  if (!email) return <p style={{ padding: "2rem" }}>⚠️ No user email found. Please log in again.</p>;
 
   const styles = {
     page: {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,22 +16,30 @@ const Inventory = () => {
     sellPrice: 0,
   });
   const [editingId, setEditingId] = useState(null);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('userEmail');
-    if (!storedEmail) {
-      toast.error('⚠️ No logged-in user found. Please log in again.');
+    const token = localStorage.getItem('jwtToken');
+
+    if (!storedEmail || !token) {
+      toast.error('⚠️ Please log in again.');
+      setTimeout(() => navigate('/'), 2000);
       return;
     }
     setEmail(storedEmail);
-  }, []);
+  }, [navigate]);
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/all?email=${email}`);
+      const token = localStorage.getItem('jwtToken');
+      const res = await axios.get(`${BASE_URL}/all?email=${email}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setItems(res.data);
     } catch (err) {
       toast.error('❌ Failed to fetch inventory.');
@@ -46,12 +54,22 @@ const Inventory = () => {
     if (!newItem.name) return toast.warn('Name is required');
 
     try {
+      const token = localStorage.getItem('jwtToken');
+
       if (editingId) {
-        await axios.put(`${BASE_URL}/update/${editingId}?email=${email}`, newItem);
+        await axios.put(`${BASE_URL}/update/${editingId}?email=${email}`, newItem, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         toast.success('✅ Item updated successfully!');
         setEditingId(null);
       } else {
-        await axios.post(`${BASE_URL}/add?email=${email}`, newItem);
+        await axios.post(`${BASE_URL}/add?email=${email}`, newItem, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         toast.success('✅ Item added successfully!');
       }
 
@@ -79,7 +97,14 @@ const Inventory = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${BASE_URL}/delete/${deleteId}?email=${email}`);
+      const token = localStorage.getItem('jwtToken');
+
+      await axios.delete(`${BASE_URL}/delete/${deleteId}?email=${email}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       toast.success('🗑️ Item deleted!');
       fetchInventory();
       setShowDeleteModal(false);
@@ -101,19 +126,7 @@ const Inventory = () => {
       <div style={styles.container}>
         <Link
           to="/home"
-          style={{
-            display: "inline-block",
-            marginBottom: "1rem",
-            padding: "8px 18px",
-            backgroundColor: "#4CAF50",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "6px",
-            fontWeight: "bold",
-            fontSize: "15px",
-            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-            transition: "all 0.3s ease"
-          }}
+          style={styles.backLink}
           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#388E3C")}
           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4CAF50")}
         >
@@ -292,6 +305,19 @@ const styles = {
     maxWidth: "400px",
     boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
     textAlign: "center",
+  },
+  backLink: {
+    display: "inline-block",
+    marginBottom: "1rem",
+    padding: "8px 18px",
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    textDecoration: "none",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    fontSize: "15px",
+    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+    transition: "all 0.3s ease"
   }
 };
 
