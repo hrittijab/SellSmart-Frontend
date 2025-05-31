@@ -25,15 +25,13 @@ function Report() {
     try {
       const res = await fetch(
         `https://sellsmart-backend.onrender.com/api/sales/yearly-profit-summary?email=${email}&year=${selectedYear}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (!res.ok) throw new Error("Unauthorized");
 
       const data = await res.json();
       setMonthlyProfits(data);
+
       const total = data.reduce((sum, entry) => sum + entry.profit, 0);
       setYearTotal(total);
     } catch (err) {
@@ -57,29 +55,36 @@ function Report() {
       );
       const damageData = await damageRes.json();
 
-      // Aggregate sales by product name to remove duplicates and sum quantities & totals
+      // Aggregate sales by product name (case-insensitive)
       const aggregatedSales = salesData.reduce((acc, sale) => {
-        const key = sale.name.trim().toLowerCase(); // normalize for key
+        const key = sale.name.trim().toLowerCase();
         if (!acc[key]) {
           acc[key] = { ...sale };
         } else {
           acc[key].quantitySold += sale.quantitySold;
-          // Assuming sellPrice and buyPrice remain the same for the same product
-          acc[key].totalEarned = (acc[key].quantitySold * acc[key].sellPrice);
-          acc[key].totalSpent = (acc[key].quantitySold * acc[key].buyPrice);
         }
         return acc;
       }, {});
-
-      // Convert back to array, fix totalEarned and totalSpent if missing
       const filteredSalesAggregated = Object.values(aggregatedSales).map(item => ({
         ...item,
         totalEarned: item.quantitySold * item.sellPrice,
         totalSpent: item.quantitySold * item.buyPrice,
       }));
 
+      // Aggregate damages by product name (case-insensitive)
+      const aggregatedDamages = damageData.reduce((acc, damage) => {
+        const key = damage.name.trim().toLowerCase();
+        if (!acc[key]) {
+          acc[key] = { ...damage };
+        } else {
+          acc[key].quantityDamaged += damage.quantityDamaged;
+        }
+        return acc;
+      }, {});
+      const filteredDamagesAggregated = Object.values(aggregatedDamages);
+
       setFilteredSales(filteredSalesAggregated);
-      setFilteredDamages(damageData);
+      setFilteredDamages(filteredDamagesAggregated);
     } catch (err) {
       console.error("Error fetching filtered data:", err);
     }
@@ -98,8 +103,11 @@ function Report() {
     navigate(`/month/${year}/${monthName}`);
   };
 
-  const getFilteredIncome = () => filteredSales.reduce((sum, s) => sum + s.quantitySold * s.sellPrice, 0);
-  const getFilteredProfit = () => filteredSales.reduce((sum, s) => sum + (s.sellPrice - s.buyPrice) * s.quantitySold, 0);
+  const getFilteredIncome = () =>
+    filteredSales.reduce((sum, s) => sum + s.quantitySold * s.sellPrice, 0);
+
+  const getFilteredProfit = () =>
+    filteredSales.reduce((sum, s) => sum + (s.sellPrice - s.buyPrice) * s.quantitySold, 0);
 
   const styles = {
     page: {
