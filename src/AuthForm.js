@@ -64,7 +64,8 @@ const AuthForm = () => {
         setMessage('Authentication failed: No token received.');
       }
     } catch (err) {
-      setMessage(err.response?.data || 'Error occurred');
+      // Always show "Wrong password" on login error for simplicity
+      setMessage(step === 'login' ? 'Wrong password' : (err.response?.data || 'Error occurred'));
     }
   }, [email, password, confirmPassword, step, navigate]);
 
