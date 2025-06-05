@@ -1,29 +1,74 @@
-SellSmart Backend
-SellSmart is a backend RESTful API service built with Spring Boot that helps users manage their inventory, sales, and damaged goods with secure authentication and authorization.
+SellSmart Frontend
+The frontend for SellSmart is a user-friendly application built to allow users to manage their inventory, sales, and damaged goods seamlessly. It communicates with the SellSmart backend REST API for all data operations and authentication.
 
 Features
-User Authentication: Register and log in with JWT-based token authentication.
+User Authentication: Login and registration are integrated with JWT tokens.
 
-Inventory Management: Add, update, delete, and list inventory items.
+Inventory Management: View, add, edit, and delete inventory items.
 
-Sales Tracking: Record daily sales, update or delete sales entries, and generate profit summaries.
+Sales Management: Record sales, update, and delete sales entries.
 
-Damaged Goods Management: Report, update, delete damaged goods, and track between dates.
+Damaged Goods Reporting: Report damaged items and view history.
 
-Security: Email whitelist for registration, password hashing with BCrypt, and JWT token verification.
+Real-time Data Display: Fetches and displays live data from the backend.
 
-Cloud Database: Data persisted in Firebase Firestore.
+Secure Token Handling: Stores JWT tokens securely and includes them in API requests.
+
+Responsive UI: Designed for mobile (React Native) or web (React) for easy navigation.
 
 Technologies
-Java 17
+React Native (or React.js)
 
-Spring Boot 3.5.0
+Axios or Fetch API for network requests
 
-Firebase Firestore (NoSQL database)
+React Navigation (for React Native) or React Router (for React Web)
 
-JWT (JSON Web Tokens) for secure API access
+State management with React hooks / Context API / Redux (whichever you use)
 
-BCrypt for password hashing
+JWT for authentication token handling
 
-Maven for build and dependency management
+Setup Instructions
+Prerequisites
+Node.js and npm/yarn installed
 
+React Native CLI or Expo (for mobile)
+
+Or React environment setup (for web)
+
+Installation
+bash
+Copy
+git clone <your-frontend-repo-url>
+cd sellsmart-frontend
+npm install
+Running the App
+React Native (Expo)
+
+bash
+Copy
+expo start
+React Web
+
+bash
+Copy
+npm start
+Configuration
+Configure the backend API base URL in your environment or config files.
+
+Example in .env:
+
+env
+Copy
+REACT_APP_API_BASE_URL=http://localhost:8080/api
+Use this base URL in API calls to the backend.
+
+Authentication Flow
+User registers or logs in via the frontend form.
+
+Backend returns a JWT token on successful login.
+
+Token is stored securely (e.g., AsyncStorage in React Native or localStorage in React web).
+
+All subsequent API requests include the token in the Authorization header as Bearer <token>.
+
+On logout, token is removed from storage.
