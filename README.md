@@ -55,12 +55,6 @@ npm start
 Configuration
 Configure the backend API base URL in your environment or config files.
 
-Example in .env:
-
-env
-Copy
-REACT_APP_API_BASE_URL=http://localhost:8080/api
-Use this base URL in API calls to the backend.
 
 Authentication Flow
 User registers or logs in via the frontend form.
