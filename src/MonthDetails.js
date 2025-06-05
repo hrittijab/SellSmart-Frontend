@@ -50,7 +50,6 @@ const MonthDetails = () => {
     }
   }, [year, month, navigate]);
 
-  // Helper function to format YYYY-MM-DD string manually to "D Month YYYY"
   const formatDate = (dateStr) => {
     const [year, month, day] = dateStr.split("-");
     const monthNames = [

@@ -55,7 +55,6 @@ function Report() {
       );
       const damageData = await damageRes.json();
 
-      // Aggregate sales by product name (case-insensitive)
       const aggregatedSales = salesData.reduce((acc, sale) => {
         const key = sale.name.trim().toLowerCase();
         if (!acc[key]) {
